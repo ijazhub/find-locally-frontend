@@ -8,7 +8,7 @@ RUN npm run build -- --configuration production
 
 FROM nginx:stable-alpine
 
-ENV API_UPSTREAM=http://host.docker.internal:8080
+ENV API_UPSTREAM=http://10.0.0.13:8080
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist/niva-web/browser /usr/share/nginx/html
 
