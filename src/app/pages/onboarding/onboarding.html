@@ -1,0 +1,89 @@
+<div class="page layout">
+  <section class="main">
+    <div class="eyebrow">Become a provider</div><h1>Let's set up your business</h1>
+    <mat-stepper orientation="vertical" [linear]="false" #stepper>
+      <mat-step label="About you">
+        <div class="stack form">
+          <mat-form-field appearance="outline"><mat-label>Your name</mat-label><input matInput [(ngModel)]="about.ownerName"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Business name</mat-label><input matInput [(ngModel)]="about.businessName"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Category</mat-label>
+            <mat-select [(ngModel)]="about.category">@for (c of categories(); track c.slug) { <mat-option [value]="c.slug">{{ c.name }}</mat-option> }</mat-select></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>A short bio</mat-label><textarea matInput rows="3" maxlength="400" [(ngModel)]="about.bio"></textarea></mat-form-field>
+          <div><button mat-flat-button (click)="save('ABOUT', about, stepper)" [disabled]="!about.ownerName || !about.businessName || !about.category">Continue</button></div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Where you work">
+        <div class="stack form">
+          <mat-form-field appearance="outline"><mat-label>City in West Bengal</mat-label>
+            <mat-select [(ngModel)]="location.city" required>
+              @for (city of cities.cities; track city) { <mat-option [value]="city">{{ city }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Neighbourhood</mat-label><input matInput [(ngModel)]="location.neighbourhood"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>How do you work?</mat-label>
+            <mat-select [(ngModel)]="location.workMode"><mat-option value="STUDIO">From my studio</mat-option><mat-option value="TRAVELS_TO_CLIENT">I travel to clients</mat-option><mat-option value="BOTH">Both</mat-option></mat-select></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>How far will you travel (km)?</mat-label><input matInput type="number" [(ngModel)]="location.serviceRadiusKm"></mat-form-field>
+          <div class="row" style="justify-content:flex-start"><button mat-button matStepperPrevious>Back</button><button mat-flat-button (click)="save('LOCATION', location, stepper)" [disabled]="!location.neighbourhood">Continue</button></div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Services &amp; rates">
+        <div class="stack form">
+          @for (s of services; track $index) {
+            <div class="box stack">
+              <mat-form-field appearance="outline"><mat-label>Service name</mat-label><input matInput [(ngModel)]="s.name"></mat-form-field>
+              <div class="row"><mat-form-field appearance="outline" style="flex:1"><mat-label>Minutes</mat-label><input matInput type="number" [(ngModel)]="s.durationMinutes"></mat-form-field>
+                <mat-form-field appearance="outline" style="flex:1"><mat-label>Price (₹)</mat-label><input matInput type="number" [(ngModel)]="s.rupees"></mat-form-field></div>
+              @if (services.length > 1) { <div><button mat-button (click)="services.splice($index, 1)">Remove</button></div> }
+            </div>
+          }
+          <div><button mat-stroked-button (click)="services.push({ name: '', durationMinutes: 60, rupees: null })">Add another service</button></div>
+          <div class="row" style="justify-content:flex-start"><button mat-button matStepperPrevious>Back</button><button mat-flat-button (click)="saveServices(stepper)" [disabled]="!services[0].name || !services[0].rupees">Continue</button></div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Availability">
+        <div class="stack form">
+          <mat-checkbox [(ngModel)]="availability.byAppointmentOnly">By appointment only</mat-checkbox>
+          @for (d of availability.weekly; track d.day) {
+            <div class="row"><mat-checkbox [(ngModel)]="d.open" style="width:90px">{{ d.day }}</mat-checkbox>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" style="width:130px"><input matInput type="time" [(ngModel)]="d.from" [disabled]="!d.open" aria-label="From"></mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" style="width:130px"><input matInput type="time" [(ngModel)]="d.to" [disabled]="!d.open" aria-label="To"></mat-form-field></div>
+          }
+          <div class="row" style="justify-content:flex-start"><button mat-button matStepperPrevious>Back</button><button mat-flat-button (click)="save('AVAILABILITY', availability, stepper)">Continue</button></div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Show your work">
+        <div class="stack form">
+          <label>Profile photo <input type="file" accept="image/*" (change)="pick($event, 'avatar')"></label>
+          <label>Cover photo <input type="file" accept="image/*" (change)="pick($event, 'cover')"></label>
+          <label>Photos of your work <input type="file" accept="image/*" multiple (change)="pick($event, 'gallery')"></label>
+          <div class="row" style="justify-content:flex-start"><button mat-button matStepperPrevious>Back</button><button mat-flat-button (click)="saveWork(stepper)" [disabled]="busy()">{{ busy() ? 'Uploading…' : 'Continue' }}</button></div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Get verified">
+        <div class="stack form">
+          <p class="muted">An ID check earns you the “Identity checked” badge. Files go straight to secure storage.</p>
+          <mat-form-field appearance="outline"><mat-label>ID type</mat-label>
+            <mat-select [(ngModel)]="idType"><mat-option value="AADHAAR">Aadhaar</mat-option><mat-option value="PAN">PAN</mat-option><mat-option value="PASSPORT">Passport</mat-option><mat-option value="DRIVING_LICENCE">Driving licence</mat-option><mat-option value="VOTER_ID">Voter ID</mat-option></mat-select></mat-form-field>
+          <label>ID document <input type="file" accept="image/*,application/pdf" (change)="pick($event, 'id')"></label>
+          @if (error()) { <p style="color:#b3261e">{{ error() }}</p> }
+          <div class="row" style="justify-content:flex-start"><button mat-button matStepperPrevious>Back</button><button mat-flat-button (click)="finish()" [disabled]="busy()">Finish and go live</button></div>
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </section>
+
+  <aside>
+    <div class="eyebrow">Live preview</div>
+    <div class="box stack preview">
+      <div class="cover"></div>
+      <b>{{ about.businessName || 'Your business name' }}</b>
+      <span class="muted">{{ categoryName() }}{{ location.neighbourhood ? ' · ' + location.neighbourhood : '' }}</span>
+      @if (services[0].name) { <span class="pill">{{ services[0].name }}@if (services[0].rupees) { · ₹{{ services[0].rupees }} }</span> }
+    </div>
+  </aside>
+</div>

@@ -1,0 +1,17 @@
+<mat-card>
+  <div class="cover" [style.background-image]="p().coverImageUrl ? 'url(' + p().coverImageUrl + ')' : 'none'">
+    @if (p().badges?.length) { <span class="pill">{{ p().badges![0].replace('_', ' ') }}</span> }
+  </div>
+  <mat-card-content class="stack">
+    <div class="row"><b>{{ p().businessName }}</b><span>★ {{ p().rating ?? '–' }} ({{ p().reviewCount ?? 0 }})</span></div>
+    <div class="muted">{{ p().tags?.join(' · ') }}</div>
+    <div class="muted">{{ p().neighbourhood }}@if (p().distanceKm != null) { · {{ p().distanceKm }} km away }</div>
+    <div class="row">
+      <b>from {{ p().startingPrice | inr }}</b>
+      <span>
+        <button mat-icon-button (click)="toggle()" aria-label="Save"><mat-icon>{{ saved() ? 'bookmark' : 'bookmark_border' }}</mat-icon></button>
+        <a mat-flat-button [routerLink]="['/providers', p().id]">View</a>
+      </span>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,19 @@
+<div class="page stack narrow">
+  <div class="eyebrow">Ask Niva</div>
+  <h1>Tell us what you need.</h1>
+  <p class="muted">For example: “makeup artist tomorrow 6pm, under ₹2,000”.</p>
+  @for (t of turns(); track $index) {
+    <div class="bubble" [class.me]="t.from === 'me'">{{ t.text }}</div>
+    @for (r of t.recs; track r.recommendationId) {
+      <div class="box row">
+        <div><b>{{ r.provider.businessName }}</b> <span class="muted">★ {{ r.provider.rating }}</span><br>
+          <span class="muted">{{ r.service.name }} · {{ r.slot.startsAt | date: 'EEE h:mm a' }} · {{ r.service.price | inr }}</span><br><span>{{ r.reason }}</span></div>
+        <div class="row"><a mat-button [routerLink]="['/providers', r.provider.id]">View</a><button mat-flat-button (click)="book(r)" [disabled]="t.booked">Book this one</button></div>
+      </div>
+    }
+  }
+  <div class="row">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" style="flex:1"><mat-label>What are you looking for?</mat-label><input matInput [(ngModel)]="text" (keyup.enter)="send()"></mat-form-field>
+    <button mat-flat-button (click)="send()" [disabled]="!text.trim() || busy()">Ask</button>
+  </div>
+</div>

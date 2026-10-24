@@ -1,0 +1,39 @@
+<div class="page layout">
+  <aside class="box stack">
+    <h3>Filters</h3>
+    <mat-form-field appearance="outline"><mat-label>City in West Bengal</mat-label>
+      <mat-select [value]="location.selected()" (selectionChange)="changeCity($event.value)">
+        @for (city of location.cities; track city) { <mat-option [value]="city">{{ city }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Name or neighbourhood</mat-label><input matInput [(ngModel)]="f.q" (keyup.enter)="load(true)"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Category</mat-label>
+      <mat-select [(ngModel)]="f.category" (selectionChange)="load(true)">
+        <mat-option value="">All</mat-option>
+        @for (c of categories(); track c.slug) { <mat-option [value]="c.slug">{{ c.name }}</mat-option> }
+      </mat-select></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Distance</mat-label>
+      <mat-select [(ngModel)]="f.maxDistanceKm" (selectionChange)="load(true)">
+        <mat-option [value]="''">Any</mat-option><mat-option [value]="2">Under 2 km</mat-option><mat-option [value]="5">Under 5 km</mat-option><mat-option [value]="10">Under 10 km</mat-option>
+      </mat-select></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Rating</mat-label>
+      <mat-select [(ngModel)]="f.minRating" (selectionChange)="load(true)">
+        <mat-option [value]="''">Any</mat-option><mat-option [value]="4">4 and up</mat-option><mat-option [value]="4.5">4.5 and up</mat-option>
+      </mat-select></mat-form-field>
+    <mat-checkbox [(ngModel)]="f.verifiedOnly" (change)="load(true)">Verified only</mat-checkbox>
+  </aside>
+
+  <section class="stack">
+    <div class="row">
+      <div><h1>{{ title() }}</h1><p class="muted">{{ res()?.totalElements ?? 0 }} independent businesses</p></div>
+      <mat-form-field appearance="outline" class="sort"><mat-label>Sort</mat-label>
+        <mat-select [(ngModel)]="f.sort" (selectionChange)="load(true)">
+          <mat-option value="RECOMMENDED">Recommended</mat-option><mat-option value="NEAREST">Nearest</mat-option>
+          <mat-option value="RATING">Top rated</mat-option><mat-option value="PRICE_LOW">Price: low to high</mat-option><mat-option value="PRICE_HIGH">Price: high to low</mat-option>
+        </mat-select></mat-form-field>
+    </div>
+    <div class="grid">@for (p of res()?.content; track p.id) { <app-provider-card [p]="p" /> }</div>
+    @if (res() && !res()!.content.length) { <p class="empty">No one matches yet. Try widening the filters.</p> }
+    <mat-paginator [length]="res()?.totalElements ?? 0" [pageSize]="12" [pageIndex]="f.page" hidePageSize (page)="go($event)" />
+  </section>
+</div>

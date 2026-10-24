@@ -1,0 +1,43 @@
+@if (p(); as p) {
+  <div class="page stack">
+    <header class="box head">
+      <div class="avatar" [style.background-image]="p.avatarUrl ? 'url(' + p.avatarUrl + ')' : 'none'"></div>
+      <div class="stack grow">
+        <div class="eyebrow">{{ p.headline }}</div>
+        <h1>{{ p.displayName }}</h1>
+        <span class="muted">{{ p.role }}</span>
+        <p>{{ p.bio }}</p>
+        <span>★ {{ p.rating }} ({{ p.reviewCount }}) · Since {{ p.memberSince }}</span>
+        <div class="row" style="justify-content:flex-start">
+          <button mat-flat-button (click)="toggleFollow()">{{ followed() ? 'Following' : 'Follow ' + p.displayName }}</button>
+          <a mat-stroked-button [routerLink]="['/providers', id()]">View services</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div><b>{{ p.stats?.yearsWorking }} yrs</b><span class="muted">working locally</span></div>
+      <div><b>{{ p.stats?.happyClients }}</b><span class="muted">happy clients</span></div>
+      <div><b>{{ p.stats?.averageRating }}</b><span class="muted">average rating</span></div>
+    </div>
+
+    @if (p.note) { <div class="box"><div class="eyebrow">A note from {{ p.displayName }}</div><p>“{{ p.note }}”</p><span class="muted">{{ p.area }} · {{ p.availabilityText }}</span></div> }
+
+    <mat-tab-group>
+      <mat-tab label="My work">
+        <div class="gallery">
+          @for (m of media(); track m.id) {
+            <figure>@if (m.type === 'VIDEO') { <video [src]="m.url" [poster]="m.thumbnailUrl" controls></video> } @else { <img [src]="m.thumbnailUrl || m.url" [alt]="m.caption"> }
+              <figcaption>{{ m.caption }}</figcaption></figure>
+          } @empty { <p class="empty">Photos and short films will show up here.</p> }
+        </div>
+      </mat-tab>
+      <mat-tab label="Studio notes">
+        @for (n of p.studioNotes; track n.id) { <div class="box"><p>{{ n.text }}</p><span class="muted">{{ n.postedAt | date: 'mediumDate' }}</span></div> } @empty { <p class="empty">No notes yet.</p> }
+      </mat-tab>
+      <mat-tab label="Kind words">
+        @for (r of reviews(); track r.id) { <div class="box"><b>{{ r.authorName }}</b> · ★ {{ r.rating }}<p>{{ r.text }}</p></div> } @empty { <p class="empty">No reviews yet.</p> }
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+}

@@ -1,0 +1,13 @@
+.narrow {
+  max-width: 760px;
+}
+.bubble {
+  background: #f1ece0;
+  border-radius: 16px;
+  padding: 10px 14px;
+  align-self: flex-start;
+}
+.bubble.me {
+  background: #dcebe3;
+  align-self: flex-end;
+}

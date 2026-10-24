@@ -1,0 +1,33 @@
+<mat-toolbar class="bar">
+  <a routerLink="/" class="logo"><span class="mark">n</span>niva</a>
+  <nav>
+    <a mat-button routerLink="/providers" routerLinkActive="on">Explore</a>
+    <a mat-button routerLink="/assistant" routerLinkActive="on">Ask Niva</a>
+    <a mat-button routerLink="/bookings" routerLinkActive="on">Bookings</a>
+    <a mat-button routerLink="/saved" routerLinkActive="on">Saved</a>
+    <a mat-button routerLink="/messages" routerLinkActive="on">Messages</a>
+  </nav>
+  <span class="spacer"></span>
+  @if (auth.user()) {
+    <button mat-icon-button [matMenuTriggerFor]="notes" (click)="readAll()" aria-label="Notifications">
+      <mat-icon [matBadge]="unread()" [matBadgeHidden]="!unread()" matBadgeSize="small">notifications</mat-icon>
+    </button>
+    <mat-menu #notes>
+      @for (n of notifications(); track n.id) {
+        <button mat-menu-item (click)="open(n)">{{ n.title }}</button>
+      } @empty { <span class="empty">All caught up</span> }
+    </mat-menu>
+    <a mat-stroked-button [routerLink]="auth.isBusiness() ? '/business/dashboard' : '/business/onboarding'">
+      {{ auth.isBusiness() ? 'My business' : 'Become a provider' }}
+    </a>
+    <button mat-icon-button [matMenuTriggerFor]="account" aria-label="Account"><mat-icon>account_circle</mat-icon></button>
+    <mat-menu #account>
+      <a mat-menu-item routerLink="/profile">Profile</a>
+      <button mat-menu-item (click)="auth.logout()">Log out</button>
+    </mat-menu>
+  } @else {
+    <a mat-flat-button routerLink="/login">Log in / Sign up</a>
+  }
+</mat-toolbar>
+<router-outlet />
+<footer class="muted">Niva · good people, close by</footer>

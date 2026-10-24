@@ -1,0 +1,30 @@
+<div class="page wrap">
+  <mat-card class="card">
+    <mat-card-content>
+      <form class="stack" #authForm="ngForm" (ngSubmit)="submit(authForm)">
+      <div class="eyebrow">Welcome</div>
+      <h1>{{ registering() ? 'Create an account' : 'Log in' }}</h1>
+      <p class="muted">Enter your email and password to continue.</p>
+      @if (registering()) {
+        <mat-form-field appearance="outline"><mat-label>Your name (optional)</mat-label><input matInput name="name" [(ngModel)]="name" maxlength="120" autocomplete="name" [disabled]="pending()"></mat-form-field>
+      }
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput name="email" [(ngModel)]="email" type="email" required email maxlength="254" autocomplete="email" [disabled]="pending()">
+        <mat-error>Enter a valid email address.</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput name="password" [(ngModel)]="password" [type]="showPassword() ? 'text' : 'password'" required minlength="12" maxlength="72" [autocomplete]="registering() ? 'new-password' : 'current-password'" [disabled]="pending()">
+        <button mat-button matSuffix type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="showPassword()">{{ showPassword() ? 'Hide' : 'Show' }}</button>
+        <mat-hint>Use 12–72 characters.</mat-hint>
+        <mat-error>Password must be 12–72 characters.</mat-error>
+      </mat-form-field>
+      <button mat-flat-button type="submit" [disabled]="authForm.invalid || pending()">{{ pending() ? 'Please wait…' : registering() ? 'Create account' : 'Log in' }}</button>
+      <button mat-button type="button" (click)="toggleMode()" [disabled]="pending()">{{ registering() ? 'Already have an account? Log in' : 'New here? Create an account' }}</button>
+      @if (!registering()) { <a mat-button routerLink="/forgot-password">Forgot password?</a> }
+      @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

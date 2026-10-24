@@ -1,0 +1,6 @@
+.bar { background: #fff; border-bottom: 1px solid #dde2d6; gap: 8px; flex-wrap: wrap; height: auto; min-height: 64px; }
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 20px; text-decoration: none; color: #1f3a33; margin-right: 16px; }
+.mark { width: 34px; height: 34px; border-radius: 10px; background: #dcebe3; color: #2f6354; display: grid; place-items: center; }
+nav a.on { color: #2f6354; font-weight: 700; }
+.spacer { flex: 1; }
+footer { text-align: center; padding: 32px; }

@@ -1,0 +1,29 @@
+<div class="page stack">
+  <h1>Hi, {{ auth.user()?.name || 'there' }}</h1>
+  <mat-tab-group>
+    <mat-tab label="Personal details">
+      <div class="stack form">
+        <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="name"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput [(ngModel)]="email" type="email"></mat-form-field>
+        <p class="muted">Phone: {{ auth.user()?.phone }}</p>
+        <div><button mat-flat-button (click)="saveDetails()">Save</button> @if (saved()) { <span class="muted">Saved</span> }</div>
+      </div>
+    </mat-tab>
+    <mat-tab label="Addresses">
+      <div class="stack form">
+        @for (a of addresses(); track a.id) {
+          <div class="box row"><span>{{ a.label || a.line1 }}, {{ a.city }} {{ a.pincode }}</span><button mat-button (click)="removeAddress(a)">Delete</button></div>
+        }
+        <div class="box stack"><b>Add an address</b>
+          <mat-form-field appearance="outline"><mat-label>Address line</mat-label><input matInput [(ngModel)]="addr.line1"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>City</mat-label><input matInput [(ngModel)]="addr.city"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Pincode</mat-label><input matInput [(ngModel)]="addr.pincode"></mat-form-field>
+          <div><button mat-stroked-button (click)="addAddress()" [disabled]="!addr.line1 || !addr.pincode">Add</button></div></div>
+      </div>
+    </mat-tab>
+    <mat-tab label="Following">
+      <div class="grid" style="padding-top:16px">@for (p of following(); track p.id) { <app-provider-card [p]="p" /> } @empty { <p class="empty">You're not following anyone yet.</p> }</div>
+    </mat-tab>
+  </mat-tab-group>
+  <div><button mat-stroked-button (click)="auth.logout()">Log out</button></div>
+</div>

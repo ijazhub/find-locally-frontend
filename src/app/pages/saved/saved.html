@@ -1,0 +1,5 @@
+<div class="page stack">
+  <div class="eyebrow">Saved for later</div><h1>People you'd like to book</h1>
+  <div class="grid">@for (p of items(); track p.id) { <app-provider-card [p]="p" (changed)="!$event && remove(p.id)" /> }</div>
+  @if (loaded() && !items().length) { <p class="empty">Nothing saved yet. Tap the bookmark on anyone you like. <a routerLink="/providers">Explore services</a></p> }
+</div>

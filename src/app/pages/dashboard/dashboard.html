@@ -1,0 +1,72 @@
+<div class="page stack">
+  <div class="eyebrow">Overview</div><h1>Good morning, {{ o()?.greetingName }}</h1>
+  <mat-tab-group>
+    <mat-tab label="Overview">
+      <div class="stack pad">
+        <div class="stats">
+          <div class="box"><span class="muted">Today</span><b>{{ o()?.today }}</b></div>
+          <div class="box"><span class="muted">Awaiting reply</span><b>{{ o()?.awaitingReply }}</b></div>
+          <div class="box"><span class="muted">This month</span><b>{{ o()?.monthEarnings | inr }}</b></div>
+          <div class="box"><span class="muted">Rating</span><b>{{ o()?.rating }}</b></div>
+        </div>
+        <h2>Needs your reply</h2>
+        @for (b of o()?.needsReply; track b.id) { <ng-container *ngTemplateOutlet="row; context: { b: b }" /> } @empty { <p class="muted">Nothing waiting. Lovely.</p> }
+        @if (o()?.profileCompletion; as c) { <div class="box">Profile: {{ c.completedSteps }} of {{ c.totalSteps }} steps done</div> }
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Bookings">
+      <div class="stack pad">
+        <mat-form-field appearance="outline" style="max-width:240px"><mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="status" (selectionChange)="loadBookings()"><mat-option value="">All</mat-option>@for (s of statuses; track s) { <mat-option [value]="s">{{ label[s] }}</mat-option> }</mat-select></mat-form-field>
+        @for (b of bookings(); track b.id) { <ng-container *ngTemplateOutlet="row; context: { b: b }" /> } @empty { <p class="empty">No bookings.</p> }
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Services &amp; rates">
+      <div class="stack pad">
+        @for (s of services(); track s.id) {
+          <div class="box row"><div><b>{{ s.name }}</b><br><span class="muted">{{ s.description }} · {{ s.durationMinutes }} min · {{ s.price | inr }}</span></div>
+            <div class="row"><mat-slide-toggle [checked]="!!s.active" (change)="toggle(s, $event.checked)">Active</mat-slide-toggle>
+              <button mat-button (click)="edit(s)">Edit</button><button mat-button (click)="remove(s)">Delete</button></div></div>
+        }
+        <div class="box stack form"><b>{{ draft.id ? 'Edit service' : 'Add a service' }}</b>
+          <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="draft.name"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Short description</mat-label><input matInput [(ngModel)]="draft.description"></mat-form-field>
+          <div class="row"><mat-form-field appearance="outline" style="flex:1"><mat-label>Minutes</mat-label><input matInput type="number" [(ngModel)]="draft.durationMinutes"></mat-form-field>
+            <mat-form-field appearance="outline" style="flex:1"><mat-label>Price (₹)</mat-label><input matInput type="number" [(ngModel)]="draft.rupees"></mat-form-field></div>
+          <div><button mat-flat-button (click)="saveService()" [disabled]="!draft.name || !draft.rupees">{{ draft.id ? 'Save' : 'Add service' }}</button>
+            @if (draft.id) { <button mat-button (click)="draft = blank()">Cancel</button> }</div></div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Availability">
+      <div class="stack pad form">
+        <mat-checkbox [(ngModel)]="avail.byAppointmentOnly">By appointment only</mat-checkbox>
+        @for (d of avail.weekly; track d.day) {
+          <div class="row"><mat-checkbox [(ngModel)]="d.open" style="width:90px">{{ d.day }}</mat-checkbox>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" style="width:130px"><input matInput type="time" [(ngModel)]="d.from" [disabled]="!d.open" aria-label="From"></mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" style="width:130px"><input matInput type="time" [(ngModel)]="d.to" [disabled]="!d.open" aria-label="To"></mat-form-field></div>
+        }
+        <div><button mat-flat-button (click)="saveAvailability()">Save availability</button> @if (availSaved()) { <span class="muted">Saved</span> }</div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Kind words">
+      <div class="stack pad">
+        @for (r of reviews(); track r.id) { <div class="box"><b>{{ r.authorName }}</b> · ★ {{ r.rating }} <span class="muted">{{ r.serviceName }}</span><p>{{ r.text }}</p></div> } @empty { <p class="empty">No reviews yet.</p> }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<ng-template #row let-b="b">
+  <div class="box row">
+    <div><b>{{ b.customer?.name }}</b> · {{ b.service.name }} <span class="pill">{{ label[b.status] }}</span><br>
+      <span class="muted">{{ b.startsAt | date: 'EEE, d MMM · h:mm a' }} · {{ b.total | inr }}</span></div>
+    <div class="row">
+      @if (b.status === 'AWAITING_CONFIRMATION') { <button mat-flat-button (click)="act(b, 'accept')">Accept</button><button mat-stroked-button (click)="act(b, 'decline')">Decline</button> }
+      @if (b.status === 'CONFIRMED') { <button mat-stroked-button (click)="act(b, 'complete')">Mark done</button> }
+    </div>
+  </div>
+</ng-template>

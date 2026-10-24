@@ -1,0 +1,5 @@
+.head { display: flex; gap: 24px; flex-wrap: wrap; background: linear-gradient(120deg, #eaf3ee, #f7e8e1); } .grow { flex: 1; min-width: 260px; }
+.avatar { width: 120px; height: 120px; border-radius: 50%; background: #e9ddd0 center/cover; border: 4px solid #fff; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; } .stats b { display: block; font-size: 24px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; padding: 16px 0; }
+figure { margin: 0; } img, video { width: 100%; border-radius: 16px; aspect-ratio: 4/5; object-fit: cover; background: #e9ddd0; } figcaption { padding-top: 6px; font-weight: 500; }

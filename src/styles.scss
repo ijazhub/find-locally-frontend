@@ -1,0 +1,30 @@
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+  @include mat.theme((
+    color: (primary: mat.$green-palette, tertiary: mat.$rose-palette),
+    typography: 'DM Sans',
+    density: 0,
+  ));
+  // Niva palette on top of the Material theme
+  --mat-sys-primary: #2f6354;
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-surface: #faf8f0;
+  --mat-sys-background: #faf8f0;
+  --mat-sys-on-surface: #1f3a33;
+}
+
+body { margin: 0; background: #faf8f0; color: #1f3a33; font-family: 'DM Sans', sans-serif; }
+a { color: #2f6354; }
+h1, h2, h3, p { margin: 0 0 8px; }
+.page { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.muted { color: #5a6b63; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #2f6354; font-weight: 700; }
+.box { background: #fff; border: 1px solid #dde2d6; border-radius: 20px; padding: 18px; }
+.pill { display: inline-block; background: #dcebe3; color: #24503f; border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 700; }
+.empty { padding: 32px; text-align: center; color: #5a6b63; }
+mat-form-field { width: 100%; }

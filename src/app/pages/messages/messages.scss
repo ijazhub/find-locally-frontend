@@ -1,0 +1,5 @@
+.chat { display: flex; gap: 20px; align-items: stretch; flex-wrap: wrap; } .list { width: 300px; } .thread { flex: 1; min-width: 300px; display: flex; flex-direction: column; min-height: 60vh; }
+.conv { display: block; width: 100%; text-align: left; background: none; border: 0; border-radius: 12px; padding: 10px; cursor: pointer; font: inherit; color: inherit; } .conv.on, .conv:hover { background: #eaf3ee; }
+.msgs { flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-bottom: 12px; }
+.msg { max-width: 70%; background: #f1ece0; border-radius: 16px; padding: 8px 12px; align-self: flex-start; } .msg small { display: block; font-size: 11px; color: #5a6b63; }
+.msg.mine { align-self: flex-end; background: #dcebe3; }

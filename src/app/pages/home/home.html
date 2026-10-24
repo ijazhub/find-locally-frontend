@@ -1,0 +1,30 @@
+<div class="page stack">
+  <section class="hero">
+    <div class="eyebrow">A lovely day starts here</div>
+    <h1>Good work, made nearby.</h1>
+    <p class="muted">Find your next favourite local business in {{ city }}.</p>
+    <mat-form-field appearance="outline">
+      <mat-label>City in West Bengal</mat-label>
+      <mat-select [value]="city" (selectionChange)="changeCity($event.value)">
+        @for (city of location.cities; track city) { <mat-option [value]="city">{{ city }}</mat-option> }
+      </mat-select>
+    </mat-form-field>
+    <div class="search">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>What are you looking for?</mat-label>
+        <input matInput [(ngModel)]="q" (keyup.enter)="search()">
+      </mat-form-field>
+      <button mat-flat-button (click)="search()">Explore services</button>
+    </div>
+  </section>
+
+  <div><div class="eyebrow">Made for your neighbourhood</div><h2>Browse by service</h2></div>
+  <div class="tiles">
+    @for (c of categories(); track c.slug) {
+      <a class="tile" [style.background]="tints[$index % tints.length]" [routerLink]="['/providers']" [queryParams]="{ category: c.slug }">{{ c.name }}</a>
+    }
+  </div>
+
+  <div><div class="eyebrow">Picked for {{ city }}</div><h2>A little local love</h2></div>
+  <div class="grid">@for (p of featured(); track p.id) { <app-provider-card [p]="p" /> }</div>
+</div>

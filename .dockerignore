@@ -1,0 +1,13 @@
+node_modules
+dist
+.angular
+.git
+.vscode
+.idea
+.agents
+.codex
+.aws
+.env
+.env.*
+coverage
+*.log

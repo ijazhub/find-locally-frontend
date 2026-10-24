@@ -1,0 +1,6 @@
+.hero { background: linear-gradient(120deg, #dcebe3, #f3ddd3); border-radius: 28px; padding: 48px; }
+.hero h1 { font-size: 48px; line-height: 1.05; margin: 8px 0 12px; }
+.search { display: flex; gap: 12px; align-items: center; margin-top: 20px; max-width: 560px; }
+.search mat-form-field { flex: 1; background: #fff; border-radius: 12px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.tile { border-radius: 20px; padding: 28px 16px; text-align: center; font-weight: 700; text-decoration: none; color: #1f3a33; }

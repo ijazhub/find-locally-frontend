@@ -1,0 +1,65 @@
+<div class="page stack">
+  <div class="eyebrow">Your local plans</div>
+  <h1>A little something to look forward to.</h1>
+  <mat-button-toggle-group [value]="tab()" (change)="setTab($event.value)" aria-label="Filter bookings">
+    <mat-button-toggle value="UPCOMING">Upcoming</mat-button-toggle>
+    <mat-button-toggle value="DONE">Done</mat-button-toggle>
+    <mat-button-toggle value="CANCELLED">Cancelled</mat-button-toggle>
+    <mat-button-toggle value="CART">In cart</mat-button-toggle>
+  </mat-button-toggle-group>
+  @if (summary()?.nextBookingLabel && tab() === 'UPCOMING') {
+    <div class="banner"><b>{{ summary().upcomingCount }} lovely plans ahead</b><br>{{ summary().nextBookingLabel }}</div>
+  }
+
+  @if (tab() !== 'CART') {
+    @for (b of bookings(); track b.id) {
+      <div class="box stack">
+        <div class="row">
+          <div><b class="name">{{ b.provider.businessName }}</b> <span class="pill">{{ label[b.status] }}</span><br>
+            <span class="muted">{{ b.service.name }} · {{ b.startsAt | date: 'EEE, d MMM · h:mm a' }}</span></div>
+          <div class="row"><b>{{ b.total | inr }}</b>
+            <button mat-stroked-button (click)="message(b)">Message</button>
+            @if (b.status === 'AWAITING_CONFIRMATION' || b.status === 'CONFIRMED') { <button mat-stroked-button (click)="cancel(b)">Cancel</button> }
+          </div>
+        </div>
+        @if (b.status === 'COMPLETED' && !b.reviewed) {
+          <div class="row" style="justify-content:flex-start">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" style="width:110px"><mat-label>Rating</mat-label>
+              <mat-select [(ngModel)]="drafts[b.id].rating">@for (r of [5, 4, 3, 2, 1]; track r) { <mat-option [value]="r">{{ r }} ★</mat-option> }</mat-select></mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" style="flex:1;min-width:200px"><mat-label>Kind words</mat-label><input matInput [(ngModel)]="drafts[b.id].text"></mat-form-field>
+            <button mat-flat-button (click)="review(b)">Send</button>
+          </div>
+        }
+      </div>
+    } @empty { <p class="empty">Nothing here yet. <a routerLink="/providers">Find someone nearby</a></p> }
+  } @else {
+    @for (i of cart()?.items; track i.id) {
+      <div class="box row"><div><b>{{ i.provider.businessName }}</b><br><span class="muted">{{ i.service.name }}</span></div>
+        <div class="row"><b>{{ i.service.price | inr }}</b><button mat-stroked-button (click)="editItem(i)" [disabled]="saving()">Edit</button><button mat-stroked-button (click)="removeItem(i.id)" [disabled]="saving()">Remove</button></div></div>
+      @if (editing() === i.id) {
+        <form class="box stack" #cartForm="ngForm" (ngSubmit)="saveItem()">
+          <mat-form-field appearance="outline"><mat-label>Service</mat-label>
+            <mat-select name="service" [(ngModel)]="cartDraft.serviceId" required [disabled]="saving()">
+              @for (service of services(); track service.id) { <mat-option [value]="service.id">{{ service.name }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Date and time (optional)</mat-label><input matInput type="datetime-local" name="startsAt" [(ngModel)]="cartDraft.startsAt" [disabled]="saving()"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Fulfilment (optional)</mat-label>
+            <mat-select name="fulfilment" [(ngModel)]="cartDraft.fulfilment" [disabled]="saving()">
+              <mat-option value="">Choose later</mat-option>
+              <mat-option value="AT_CLIENT">At my address</mat-option><mat-option value="AT_STUDIO">At their studio</mat-option>
+              <mat-option value="PICKUP">Pickup</mat-option><mat-option value="DELIVERY">Delivery</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <p class="muted">Clearing the date or fulfilment removes that selection.</p>
+          <div><button mat-flat-button type="submit" [disabled]="cartForm.invalid || saving() || !services().length">Save changes</button>
+            <button mat-button type="button" (click)="editing.set(null)" [disabled]="saving()">Cancel</button></div>
+        </form>
+      }
+    } @empty { <p class="empty">Your cart is empty.</p> }
+    @if (cartError()) { <p role="alert">{{ cartError() }}</p> }
+    @if (cart()?.items?.length) {
+      <div class="row"><b>Total {{ cart().total | inr }}</b><button mat-flat-button (click)="checkout()">Request all bookings</button></div>
+    }
+  }
+</div>

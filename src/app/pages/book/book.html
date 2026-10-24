@@ -1,0 +1,60 @@
+<div class="page">
+  @if (done()) {
+    <div class="box stack">
+      <h1>Lovely, request sent.</h1>
+      <p class="muted">{{ provider()?.ownerName ?? provider()?.businessName }} will confirm shortly.</p>
+      <div class="row" style="justify-content:flex-start"><a mat-flat-button routerLink="/bookings">View my bookings</a></div>
+    </div>
+  } @else if (provider(); as p) {
+    <h1>Book {{ service()?.name }}</h1>
+    <p class="muted">with {{ p.businessName }}</p>
+    <mat-stepper [linear]="true" #stepper>
+      <mat-step label="Pick a time" [completed]="!!slot()">
+        <div class="stack">
+          <mat-form-field appearance="outline"><mat-label>Date</mat-label>
+            <input matInput [matDatepicker]="dp" [min]="today" (dateChange)="pickDate($event.value)" readonly (click)="dp.open()">
+            <mat-datepicker #dp />
+          </mat-form-field>
+          <div class="slots">
+            @for (s of slots(); track s.startsAt) {
+              <button mat-stroked-button [disabled]="!s.available" [class.sel]="slot() === s" (click)="slot.set(s)">{{ s.startsAt | date: 'shortTime' }}</button>
+            } @empty { @if (dateChosen()) { <span class="muted">No open times that day.</span> } }
+          </div>
+          <div><button mat-flat-button matStepperNext [disabled]="!slot()">Next</button></div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Details">
+        <div class="stack">
+          <mat-form-field appearance="outline"><mat-label>How should this work?</mat-label>
+            <mat-select [(ngModel)]="fulfilment">@for (f of fulfilments(); track f) { <mat-option [value]="f">{{ label[f] }}</mat-option> }</mat-select></mat-form-field>
+          @if (needsAddress()) {
+            @if (addresses().length) {
+              <mat-form-field appearance="outline"><mat-label>Address</mat-label>
+                <mat-select [(ngModel)]="addressId">@for (a of addresses(); track a.id) { <mat-option [value]="a.id">{{ a.label || a.line1 }}, {{ a.city }}</mat-option> }</mat-select></mat-form-field>
+            } @else {
+              <div class="box stack"><b>Add an address</b>
+                <mat-form-field appearance="outline"><mat-label>Address line</mat-label><input matInput [(ngModel)]="newAddr.line1"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>City</mat-label><input matInput [(ngModel)]="newAddr.city"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Pincode</mat-label><input matInput [(ngModel)]="newAddr.pincode"></mat-form-field>
+                <button mat-stroked-button (click)="saveAddress()" [disabled]="!newAddr.line1 || !newAddr.pincode">Save address</button></div>
+            }
+          }
+          <mat-form-field appearance="outline"><mat-label>A note (optional)</mat-label><textarea matInput [(ngModel)]="note" rows="3"></textarea></mat-form-field>
+          <div class="row" style="justify-content:flex-start"><button mat-button matStepperPrevious>Back</button><button mat-flat-button matStepperNext [disabled]="needsAddress() && !addressId">Next</button></div>
+        </div>
+      </mat-step>
+
+      <mat-step label="Review">
+        <div class="box stack">
+          <b>{{ service()?.name }}</b><span class="muted">{{ p.businessName }}</span>
+          <span>{{ slot()?.startsAt | date: 'EEE, d MMM · h:mm a' }} · {{ service()?.durationMinutes }} min</span>
+          <span class="muted">{{ label[fulfilment] }}</span>
+          <div class="row"><span class="muted">Total</span><b>{{ service()?.price | inr }}</b></div>
+        </div>
+        @if (error()) { <p style="color:#b3261e">{{ error() }}</p> }
+        <div class="row" style="justify-content:flex-start;margin-top:12px"><button mat-button matStepperPrevious>Back</button><button mat-flat-button (click)="confirm()">Confirm booking</button></div>
+      </mat-step>
+    </mat-stepper>
+  }
+</div>
