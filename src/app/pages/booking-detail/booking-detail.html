@@ -1,0 +1,33 @@
+<main class="page stack">
+  <a [routerLink]="business ? '/business/dashboard' : '/bookings'">← Back to bookings</a>
+  @if (loading()) { <p role="status">Loading booking…</p> }
+  @if (error()) { <p role="alert">{{ error() }}</p><button mat-stroked-button (click)="load()" [disabled]="loading() || pending()">Refresh details</button> }
+  @if (notice()) { <p role="status">{{ notice() }}</p> }
+  @if (booking(); as b) {
+    <div class="row"><h1>{{ b.service.name }}</h1><span class="pill">{{ label[b.status] }}</span></div>
+    <section class="box stack"><h2>{{ b.provider.businessName }}</h2><p>Customer: {{ b.customer?.name }}</p><p>{{ b.startsAt | businessTime }} Asia/Kolkata @if (b.endsAt) { – {{ b.endsAt | businessTime }} Asia/Kolkata }</p><p>Fulfilment: {{ b.fulfilment }}</p>@if (b.address) { <p>{{ b.address.line1 }}, {{ b.address.city }}, {{ b.address.pincode }}</p> }<p>{{ b.note }}</p>
+      @if (b.listedPrice) { <p>Indicative price: {{ b.listedPrice | inr }}</p> }
+      @if (b.proposedPrice) { <p>Original customer proposal: <b>{{ b.proposedPrice | inr }}</b></p> }
+      @if ((b.status === 'CONFIRMED' || b.status === 'COMPLETED') && b.agreedPrice) { <p>Final agreed price: <b>{{ b.agreedPrice | inr }}</b></p> }
+      @if (b.holdExpiresAt) { <p>Slot hold expires: {{ b.holdExpiresAt | businessTime }} Asia/Kolkata</p> }
+      @if (b.responseDeadline) { <p>Response deadline: {{ b.responseDeadline | businessTime }} Asia/Kolkata</p> }
+      @if (b.declineReason) { <p>Decline reason: {{ b.declineReason }}</p> }
+      <button mat-stroked-button (click)="chat()" [disabled]="pending()">Chat about this booking</button>
+    </section>
+    @if (current(); as q) { <section class="box stack"><h2>Current provider quotation</h2><b>{{ q.price | inr }} · Version {{ q.version }}</b>@if (q.expiresAt) { <p>Expires {{ q.expiresAt | businessTime }} Asia/Kolkata</p> }<p>A quotation is not a confirmed booking. Chat messages do not accept quotations.</p></section> }
+    <section class="box stack"><h2>Available actions</h2>
+      <div class="row">
+        @if (business && allowed('acceptBooking')) { <button mat-flat-button [disabled]="pending()" (click)="act('acceptBooking')">Accept customer proposal</button> }
+        @if (business && allowed('declineBooking')) { <button mat-stroked-button [disabled]="pending()" (click)="act('declineBooking')">Decline</button> }
+        @if (business && allowed('completeBooking')) { <button mat-stroked-button [disabled]="pending()" (click)="act('completeBooking')">Mark completed</button> }
+        @if (!business && current() && allowed('respondToQuotation')) { <button mat-flat-button [disabled]="pending()" (click)="act('respondToQuotation', 'ACCEPT')">Accept current quotation</button><button mat-stroked-button [disabled]="pending()" (click)="act('respondToQuotation', 'REJECT')">Reject quotation</button> }
+        @if (allowed('cancelBooking')) { <button mat-stroked-button [disabled]="pending()" (click)="act('cancelBooking')">Cancel booking</button> }
+      </div>
+      @if (allowed('cancelBooking') || allowed('declineBooking') || allowed('respondToQuotation')) { <label>Reason (optional)<textarea [(ngModel)]="reason" maxlength="500" rows="3" [disabled]="pending()" style="display:block;width:100%;box-sizing:border-box"></textarea></label> }
+      @if (business && allowed('issueQuotation')) { <form class="stack" #quoteForm="ngForm" (ngSubmit)="act('issueQuotation')"><label>Quotation price ({{ b.proposedPrice?.currency || b.service.price.currency }})<input type="number" name="amount" [(ngModel)]="quoteAmount" min="0" step="0.01" required [disabled]="pending()"></label><p class="muted">The server sets quotation expiry. Previous quotations remain in the history.</p><button mat-flat-button [disabled]="pending() || quoteForm.invalid">{{ current() ? 'Revise quotation' : 'Send quotation' }}</button></form> }
+      <p class="muted">Only actions explicitly permitted by the server are available.</p>
+      @if (b.allowedActions?.length && !allowed('acceptBooking') && !allowed('declineBooking') && !allowed('completeBooking') && !allowed('issueQuotation') && !allowed('respondToQuotation') && !allowed('cancelBooking')) { <p role="status">This server uses action identifiers that are not yet supported by this frontend. You can refresh details or chat about this booking.</p> }
+    </section>
+    <section class="box stack"><h2>Quotation history</h2>@for (q of b.quotations; track q.id) { <article><b>Version {{ q.version }} · {{ q.price | inr }} · {{ q.state }}</b>@if (q.createdAt) { <p>Issued {{ q.createdAt | businessTime }} Asia/Kolkata</p> }@if (q.expiresAt) { <p>Expires {{ q.expiresAt | businessTime }} Asia/Kolkata</p> }</article> } @empty { <p>No quotations yet.</p> }</section>
+  }
+</main>
