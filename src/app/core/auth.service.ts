@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthResponse, LoginRequest, RegisterRequest, UserProfile } from './models';
 import { session } from './session';
+import { sessionErrorMessage } from './session-error';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -13,15 +14,27 @@ export class AuthService {
   private url = environment.apiUrl;
 
   user = signal<UserProfile | null>(null);
+  restorationFailed = signal(false);
+  restorationError = signal('');
   /** Resolves once the stored session (if any) has been checked; guards await it. */
-  ready: Promise<void> = session.access ? Promise.resolve().then(() => this.loadMe()) : Promise.resolve();
+  ready: Promise<void> = session.access ? Promise.resolve().then(() => this.loadMe()).catch(() => {}) : Promise.resolve();
 
-  isBusiness = () => !!this.user()?.roles.includes('BUSINESS');
+  isBusiness = () => this.user()?.accountType === 'BUSINESS';
+  landingUrl = () => this.isBusiness() ? (this.user()?.onboardingStatus === 'VERIFIED' ? '/business/dashboard' : '/business/onboarding') : '/';
+  canVisit(url: string) {
+    if (!url.startsWith('/') || url.startsWith('//') || url.includes('\\')) return false;
+    const path = url.split(/[?#]/)[0];
+    return this.isBusiness() ? path.startsWith('/business/') || path === '/messages' || path.startsWith('/messages/') || path === '/profile' : !path.startsWith('/business/');
+  }
 
   loadMe(): Promise<void> {
     return firstValueFrom(this.http.get<UserProfile>(`${this.url}/users/me`))
-      .then(u => this.user.set(u))
-      .catch(() => this.expire());
+      .then(u => { this.user.set(u); this.restorationFailed.set(false); this.restorationError.set(''); })
+      .catch(error => {
+        if (error.status === 401) { this.expire(); return; }
+        this.restorationFailed.set(true); this.restorationError.set(sessionErrorMessage(error));
+        throw error;
+      });
   }
 
   login(credentials: LoginRequest) {
@@ -45,9 +58,10 @@ export class AuthService {
     const res = await firstValueFrom(this.http.post<AuthResponse>(`${this.url}/auth/${action}`, body));
     session.set({ accessToken: res.accessToken, refreshToken: res.refreshToken });
     this.user.set(res.user);
+    this.restorationFailed.set(false); this.restorationError.set('');
   }
 
-  expire() { session.clear(); this.user.set(null); }
+  expire() { session.clear(); this.user.set(null); this.restorationFailed.set(false); this.restorationError.set(''); }
 
   async logout() {
     await firstValueFrom(this.http.post(`${this.url}/auth/logout`, {})).catch(() => {});

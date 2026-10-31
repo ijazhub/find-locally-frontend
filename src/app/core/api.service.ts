@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Address, Booking, CartItemInput, Category, Page, ProviderDetail, ProviderSummary, Service, Slot } from './models';
+import { Address, Booking, BusinessProfileUpdate, CartItemInput, Category, MediaItem, MediaUpdate, Money, Page, ProviderDetail, ProviderSummary, QuotationResponse, Service, Slot } from './models';
 
 const clean = (o: Record<string, any> = {}) => {
   let p = new HttpParams();
@@ -46,10 +46,13 @@ export class ApiService {
   deleteAddress = (id: string) => this.del(`/users/me/addresses/${id}`);
 
   // Bookings & cart
-  createBooking = (body: any) => this.post<Booking>('/bookings', body, { 'Idempotency-Key': crypto.randomUUID() });
+  createBooking = (body: any, key: string = crypto.randomUUID()) => this.post<Booking>('/bookings', body, { 'Idempotency-Key': key });
+  booking = (id: string) => this.get<Booking>(`/bookings/${id}`);
+  issueQuotation = (id: string, price: Money, key: string) => this.post<Booking>(`/business/bookings/${id}/quotations`, { price }, { 'Idempotency-Key': key });
+  respondToQuotation = (id: string, body: QuotationResponse, key: string) => this.post<Booking>(`/bookings/${id}/quotation-response`, body, { 'Idempotency-Key': key });
   bookings = (tab: string) => this.get<Page<Booking>>('/bookings', { tab, size: 50 });
   bookingSummary = () => this.get<any>('/bookings/summary');
-  cancelBooking = (id: string) => this.post<Booking>(`/bookings/${id}/cancel`, {});
+  cancelBooking = (id: string, reason?: string) => this.post<Booking>(`/bookings/${id}/cancel`, reason ? { reason } : {});
   review = (id: string, rating: number, text: string) => this.post(`/bookings/${id}/review`, { rating, text });
   cart = () => this.get<any>('/cart');
   addToCart = (providerId: string, serviceId: string) => this.post('/cart/items', { providerId, serviceId });
@@ -73,6 +76,12 @@ export class ApiService {
   readAllNotifications = () => this.post('/notifications/read-all');
 
   // The backend handles storage; the browser supplies the multipart boundary.
+  uploadEvents(file: File, purpose: string) {
+    const body = new FormData();
+    body.append('purpose', purpose);
+    body.append('file', file, file.name);
+    return this.http.post<{ uploadId: string }>(this.base + '/media/uploads', body, { observe: 'events', reportProgress: true });
+  }
   async upload(file: File, purpose: string): Promise<string> {
     const body = new FormData();
     body.append('purpose', purpose);
@@ -88,11 +97,17 @@ export class ApiService {
   submitOnboarding = () => this.post<any>('/business/onboarding/submit');
 
   // Business dashboard
+  businessProfile = () => this.get<BusinessProfileUpdate>('/business/profile');
+  updateBusinessProfile = (body: BusinessProfileUpdate) => this.patch<BusinessProfileUpdate>('/business/profile', body);
+  ownMedia = (page = 0) => this.get<Page<MediaItem>>('/business/media', { page, size: 24 });
+  addMedia = (uploadId: string, body: MediaUpdate) => this.post<MediaItem>('/business/media', { uploadId, ...body });
+  updateMedia = (id: string, body: MediaUpdate) => this.patch<MediaItem>(`/business/media/${id}`, body);
+  deleteMedia = (id: string) => this.del<void>(`/business/media/${id}`);
   overview = () => this.get<any>('/business/dashboard/overview');
   earnings = () => this.get<any>('/business/earnings');
   businessReviews = () => this.get<Page<any>>('/business/reviews', { size: 20 });
   businessBookings = (status?: string) => this.get<Page<Booking>>('/business/bookings', { status, size: 50 });
-  bookingAction = (id: string, action: 'accept' | 'decline' | 'complete') => this.post<Booking>(`/business/bookings/${id}/${action}`);
+  bookingAction = (id: string, action: 'accept' | 'decline' | 'complete', reason?: string) => this.post<Booking>(`/business/bookings/${id}/${action}`, reason ? { reason } : {});
   ownServices = () => this.get<Service[]>('/business/services');
   createService = (s: any) => this.post<Service>('/business/services', s);
   updateService = (id: string, s: any) => this.put<Service>(`/business/services/${id}`, s);
